@@ -1,0 +1,59 @@
+{
+    "name": "action-post-issue-comment",
+    "version": "1.0.0",
+    "description": "GitHub workflow action to post a comment to an issue and minimise any previous comments",
+    "keywords": [
+        "GitHub",
+        "action",
+        "workflow",
+        "issue",
+        "comment"
+    ],
+    "author": {
+        "name": "Alexander Thoukydides",
+        "url": "https://www.thouky.co.uk/"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/thoukydides"
+        },
+        {
+            "type": "paypal",
+            "url": "https://paypal.me/thoukydides"
+        },
+        {
+            "type": "ko-fi",
+            "url": "https://ko-fi.com/thouky"
+        },
+        {
+            "type": "buymeacoffee",
+            "url": "https://www.buymeacoffee.com/thouky"
+        }
+    ],
+    "homepage": "https://github.com/thoukydides/action-post-issue-comment#readme",
+    "bugs": {
+        "url": "https://github.com/thoukydides/action-post-issue-comment/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/thoukydides/action-post-issue-comment.git"
+    },
+    "license": "ISC",
+    "type": "commonjs",
+    "devDependencies": {
+        "@actions/core": "^2.0.2",
+        "@actions/github": "^7.0.0",
+        "@eslint/eslintrc": "^3.3.3",
+        "@eslint/js": "^9.39.2",
+        "@tsconfig/node20": "^20.1.8",
+        "@types/node": "^20.19.29",
+        "eslint": "^9.39.2",
+        "globals": "^17.0.0",
+        "typescript-eslint": "^8.53.0"
+    },
+    "scripts": {
+        "build": "tsc -p ./src",
+        "lint": "eslint eslint.config.mjs 'src/**/*.ts' --max-warnings=0"
+    }
+}

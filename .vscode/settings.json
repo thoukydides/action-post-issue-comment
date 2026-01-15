@@ -8,6 +8,7 @@
     ],
     "eslint.enable": true,
     "cSpell.words": [
+        "buymeacoffee",
         "color",
         "dosubot",
         "Homebridge",
@@ -15,9 +16,11 @@
         "Math",
         "Matterbridge",
         "MQTT",
+        "qraphql",
         "scannable",
         "Segmenter",
-        "Thoukydides"
+        "Thoukydides",
+        "vars"
     ],
     "files.exclude": {
         "node_modules/": true

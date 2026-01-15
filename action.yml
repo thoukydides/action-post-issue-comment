@@ -25,48 +25,7 @@ runs:
   steps:
     - name: Post the comment and minimise previous comments
       uses: actions/github-script@v7
-      env:
-        BODY: ${{ inputs.body }}
-        MARKER: ${{ inputs.marker }}
       with:
         script: | # javascript
-          const issue_id = {
-              owner:          context.repo.owner,
-              repo:           context.repo.repo,
-              issue_number:   ${{ inputs.issue_number }}
-          };
-
-          // Post the new comment
-          const body = `${process.env.MARKER}\n${process.env.BODY}`;
-          await github.rest.issues.createComment({ ...issue_id, body });
-          core.info(`Posted new comment:\n${body}`);
-          
-          // Retrieve the most recent comments with their node IDs
-          const QUERY_COMMENTS = `query($owner: String!, $repo: String!, $issue_number: Int!) {
-              repository(owner: $owner, name: $repo) {
-                  issue(number: $issue_number) {
-                      comments(first: 100, orderBy: { field: UPDATED_AT, direction: DESC }) {
-                          nodes { id url body isMinimized }
-                      }
-                  }
-              }
-          }`;
-          const result = await github.graphql(QUERY_COMMENTS, issue_id);
-          const comments = result.repository.issue.comments.nodes;
-
-          // Select previous comments with a matching marker that have not been minimised
-          const oldComments = comments
-              .filter(({ body, isMinimized }) => body.includes(process.env.MARKER) && !isMinimized)
-              .slice(1);
-
-          // Minimise the selected comments
-          const MUTATION_MINIMIZE_COMMENT = `mutation($id: ID!) {
-              minimizeComment(input: { classifier: OUTDATED, subjectId: $id }) {
-                  clientMutationId
-              }
-          }`;
-          for (const { id, url } of oldComments) {
-              await github.graphql(MUTATION_MINIMIZE_COMMENT, { id });
-              core.info(`Minimised comment: ${url}`);
-          }
-          if (oldComments.length) core.info(`Minimised ${oldComments.length} old comments`);
+          const fn = require('./dist/index.js');
+          return await fn(github);
