@@ -1,7 +1,7 @@
 // GitHub action
 // Copyright © 2026 Alexander Thoukydides
 
-import { GitHub } from '@actions/github/lib/utils';
+import { GitHub } from '@actions/github/lib/utils.js';
 
 // GraphQL comments query result
 export interface QueryCommentNode {

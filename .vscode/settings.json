@@ -16,6 +16,7 @@
         "Math",
         "Matterbridge",
         "MQTT",
+        "onwarn",
         "qraphql",
         "scannable",
         "Segmenter",

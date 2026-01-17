@@ -2,9 +2,9 @@
 // Copyright © 2026 Alexander Thoukydides
 
 import { context } from '@actions/github';
-import { GitHub } from '@actions/github/lib/utils';
+import { GitHub } from '@actions/github/lib/utils.js';
 import * as core from '@actions/core';
-import { minimiseComment, getRecentComments } from './graphql';
+import { minimiseComment, getRecentComments } from './graphql.js';
 
 // Script entry point
 export default async function run(github: InstanceType<typeof GitHub>) {
