@@ -19,6 +19,7 @@ Various inputs are defined in the action to configure its operation:
 | `issue_number` | The GitHub issue to comment on | *required*
 | `body` | The comment body to add | *required*
 | `marker` | A prefix for the comment body, used to identify previous comments to be minimised | `'<!-- bot-comment -->'`
+| `github_token` | The GitHub token used to create an authenticated client | `${{ github.token }}`
 
 ## Usage
 

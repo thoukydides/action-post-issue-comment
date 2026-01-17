@@ -31551,12 +31551,15 @@ async function minimiseComment(github, id) {
 // GitHub action
 // Copyright © 2026 Alexander Thoukydides
 // Script entry point
-async function run(github) {
-    const { owner, repo } = githubExports.context.repo;
+async function run() {
     // Action inputs
     const issue_number = Number(coreExports.getInput('issue_number', { required: true }));
     const comment = coreExports.getInput('body', { required: true });
     const marker = coreExports.getInput('marker', { required: true });
+    const token = coreExports.getInput('github_token', { required: true });
+    // Create an authenticated GitHub client
+    const github = githubExports.getOctokit(token);
+    const { owner, repo } = githubExports.context.repo;
     // Post the new comment
     const body = `${marker}\n${comment}`;
     await github.rest.issues.createComment({ owner, repo, issue_number, body });
@@ -31574,6 +31577,13 @@ async function run(github) {
     if (oldComments.length)
         coreExports.info(`Minimised ${oldComments.length} old comments`);
 }
-
-export { run as default };
+// Run the script and handle errors
+try {
+    await run();
+}
+catch (err) {
+    coreExports.setFailed(err instanceof Error ? `${err.name}: ${err.message}` : String(err));
+    if (err instanceof Error && err.stack)
+        coreExports.debug(err.stack);
+}
 //# sourceMappingURL=index.js.map
