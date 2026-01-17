@@ -27,5 +27,5 @@ runs:
       uses: actions/github-script@v7
       with:
         script: | # javascript
-          const fn = require('./dist/index.js');
+          const fn = require('${{ github.action_path }}/dist/index.js');
           return await fn(github);
