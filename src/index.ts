@@ -9,10 +9,17 @@ import { minimiseComment, getRecentComments } from './graphql.js';
 async function run() {
 
     // Action inputs
-    const issue_number  = Number(core.getInput('issue_number', { required: true }));
-    const comment       = core.getInput('body',         { required: true });
-    const marker        = core.getInput('marker',       { required: true });
-    const token         = core.getInput('github_token', { required: true });
+    const issue_number  = Number(core.getInput          ('issue_number',    { required: true }));
+    const comment       =        core.getInput          ('body',            { required: false });
+    const marker        =        core.getInput          ('marker',          { required: true });
+    const token         =        core.getInput          ('github_token',    { required: true });
+    const dry_run       =        core.getBooleanInput   ('dry_run',         { required: true });
+
+    // Exit early if no action required
+    if (dry_run || comment === '') {
+        core.info('Dry-run only or no comment body - exiting early');
+        return;
+    }
 
     // Create an authenticated GitHub client
     const github = getOctokit(token);

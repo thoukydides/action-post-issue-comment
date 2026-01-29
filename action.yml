@@ -22,6 +22,10 @@ inputs:
     description: The GitHub token used to create an authenticated client
     type: string
     default: ${{ github.token }}
+  dry_run:
+    description: Disables actions that modify the issue (adding the comment and minimising previous comments) for testing
+    type: boolean
+    required: false
 
 runs:
   using: node20

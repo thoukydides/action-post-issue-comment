@@ -31554,9 +31554,15 @@ async function minimiseComment(github, id) {
 async function run() {
     // Action inputs
     const issue_number = Number(coreExports.getInput('issue_number', { required: true }));
-    const comment = coreExports.getInput('body', { required: true });
+    const comment = coreExports.getInput('body', { required: false });
     const marker = coreExports.getInput('marker', { required: true });
     const token = coreExports.getInput('github_token', { required: true });
+    const dry_run = coreExports.getBooleanInput('dry_run', { required: true });
+    // Exit early if no action required
+    if (dry_run || comment === '') {
+        coreExports.info('Dry-run only or no comment body - exiting early');
+        return;
+    }
     // Create an authenticated GitHub client
     const github = githubExports.getOctokit(token);
     const { owner, repo } = githubExports.context.repo;

@@ -20,6 +20,9 @@ Various inputs are defined in the action to configure its operation:
 | `body` | The comment body to add | *required*
 | `marker` | A prefix for the comment body, used to identify previous comments to be minimised | `'<!-- bot-comment -->'`
 | `github_token` | The GitHub token used to create an authenticated client | `${{ github.token }}`
+| `dry_run` | Disables actions that modify the issue (adding the comment and minimising previous comments) for testing | `false`
+
+If `body` is empty or `dry_run` is `true` then this action does nothing.
 
 ## Usage
 
