@@ -6,7 +6,7 @@ import require$$0$3 from 'net';
 import require$$1$1 from 'tls';
 import require$$4$1 from 'events';
 import require$$0$2 from 'assert';
-import require$$0$1 from 'util';
+import require$$0$1, { isDeepStrictEqual } from 'util';
 import require$$0$4 from 'stream';
 import require$$7 from 'buffer';
 import require$$8 from 'querystring';
@@ -31550,38 +31550,128 @@ async function minimiseComment(github, id) {
 
 // GitHub action
 // Copyright © 2026 Alexander Thoukydides
+// Format a list (with Oxford comma)
+function formatList(items) {
+    switch (items.length) {
+        case 0: return 'n/a';
+        case 1: return items[0] ?? '';
+        case 2: return `${items[0]} and ${items[1]}`;
+        default: return [...items.slice(0, -1), `and ${items[items.length - 1]}`].join(', ');
+    }
+}
+
+// GitHub action
+// Copyright © 2026 Alexander Thoukydides
+// Change the labels associated with an issue
+async function updateLabels(github, issue_number, options) {
+    if (!options.labels_set && !options.labels_remove && !options.labels_add)
+        return;
+    // Read the repository's and issue's current labels
+    const repoLabels = getLabelNames('repository', await github.paginate(github.rest.issues.listLabelsForRepo, { ...githubExports.context.repo, per_page: 100 }));
+    const currentLabels = getLabelNames('issue', await github.paginate(github.rest.issues.listLabelsOnIssue, { ...githubExports.context.repo, per_page: 100, issue_number }));
+    // Parse the options
+    const setLabels = parseLabels(repoLabels, 'labels_set', options.labels_set);
+    const removeLabels = parseLabels(repoLabels, 'labels_remove', options.labels_remove);
+    const addLabels = parseLabels(repoLabels, 'labels_add', options.labels_add);
+    // Determine the new set of labels
+    let newLabels = currentLabels;
+    if (setLabels)
+        newLabels = setLabels;
+    if (removeLabels)
+        newLabels = newLabels.filter(l => !removeLabels.includes(l));
+    if (addLabels)
+        newLabels = [...new Set([...newLabels, ...addLabels])];
+    newLabels.sort();
+    // Check whether any changes are required
+    if (isDeepStrictEqual(newLabels, currentLabels)) {
+        coreExports.info('No changes required to issue labels');
+        return;
+    }
+    // Apply the new labels
+    await github.rest.issues.setLabels({ ...githubExports.context.repo, issue_number, labels: newLabels });
+    coreExports.info(`Applied issue labels: ${formatList(newLabels)}`);
+}
+function getLabelNames(description, labelsResponse) {
+    const labels = labelsResponse.map(label => label.name).sort();
+    coreExports.info(`${description} labels: ${formatList(labels)}`);
+    return labels;
+}
+// Parse a JSON string listing labels
+function parseLabels(repoLabels, description, labels) {
+    if (!labels)
+        return undefined;
+    try {
+        const result = JSON.parse(labels);
+        if (!Array.isArray(result))
+            throw new Error('Not an array');
+        if (result.some(l => typeof l !== 'string'))
+            throw new Error('Array contains non-strings');
+        if (!result.every(label => repoLabels.includes(label)))
+            throw new Error('Unknown labels');
+        return result;
+    }
+    catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        throw new Error(`Invalid ${description}: ${message}`);
+    }
+}
+
+// GitHub action
+// Copyright © 2026 Alexander Thoukydides
 // Script entry point
 async function run() {
     // Action inputs
     const issue_number = Number(coreExports.getInput('issue_number', { required: true }));
     const comment = coreExports.getInput('body', { required: false });
     const marker = coreExports.getInput('marker', { required: true });
+    const labels_set = coreExports.getInput('labels_set', { required: false });
+    const labels_remove = coreExports.getInput('labels_remove', { required: false });
+    const labels_add = coreExports.getInput('labels_add', { required: false });
+    const close_issue = coreExports.getBooleanInput('close_issue', { required: true });
+    const workflow_summary = coreExports.getBooleanInput('workflow_summary', { required: true });
     const token = coreExports.getInput('github_token', { required: true });
     const dry_run = coreExports.getBooleanInput('dry_run', { required: true });
-    // Exit early if no action required
-    if (dry_run || comment === '') {
-        coreExports.info('Dry-run only or no comment body - exiting early');
-        return;
-    }
     // Create an authenticated GitHub client
     const github = githubExports.getOctokit(token);
     const { owner, repo } = githubExports.context.repo;
-    // Post the new comment
-    const body = `${marker}\n${comment}`;
-    await github.rest.issues.createComment({ owner, repo, issue_number, body });
-    coreExports.info(`Posted new comment:\n${body}`);
-    // Retrieve previous comments with a matching marker that have not been minimised
-    const comments = await getRecentComments(github, owner, repo, issue_number);
-    const oldComments = comments
-        .filter(({ body, isMinimized }) => body.includes(marker) && !isMinimized)
-        .slice(1);
-    // Minimise the selected comments
-    for (const { id, url } of oldComments) {
-        await minimiseComment(github, id);
-        coreExports.info(`Minimised comment: ${url}`);
+    // Add the comment to the workflow summary
+    if (comment && workflow_summary) {
+        const { title, html_url } = (await github.rest.issues.get({ owner, repo, issue_number })).data;
+        coreExports.summary.addHeading(`${title} [#${issue_number}](${html_url})`);
+        coreExports.summary.addRaw(comment, true);
     }
-    if (oldComments.length)
-        coreExports.info(`Minimised ${oldComments.length} old comments`);
+    // Exit early if no action required
+    if (dry_run) {
+        coreExports.info('Dry-run; exiting early');
+        return;
+    }
+    // Add the comment to the issue and minimise any previously added comments
+    if (comment) {
+        // Post the new comment
+        const body = `${marker}\n${comment}`;
+        await github.rest.issues.createComment({ owner, repo, issue_number, body });
+        coreExports.info(`Posted new comment:\n${body}`);
+        // Retrieve previous comments with a matching marker that have not been minimised
+        const comments = await getRecentComments(github, owner, repo, issue_number);
+        const oldComments = comments
+            .filter(({ body, isMinimized }) => body.includes(marker) && !isMinimized)
+            .slice(1);
+        // Minimise the selected comments
+        for (const { id, url } of oldComments) {
+            await minimiseComment(github, id);
+            coreExports.info(`Minimised comment: ${url}`);
+        }
+        if (oldComments.length)
+            coreExports.info(`Minimised ${oldComments.length} old comments`);
+    }
+    // Update labels if required
+    const labelsOptions = { labels_set, labels_remove, labels_add };
+    await updateLabels(github, issue_number, labelsOptions);
+    // Close the issue if required
+    if (close_issue) {
+        await github.rest.issues.update({ owner, repo, issue_number, state: 'closed' });
+        coreExports.info(`Closed issue #${issue_number}`);
+    }
 }
 // Run the script and handle errors
 try {

@@ -1,6 +1,10 @@
 # `action-post-issue-comment`
 
-This action posts a new comment to an issue, and minimises (as `OUTDATED`) any previous comments that include a matching marker string.
+This action can perform the following operations on a GitHub issue:
+- Add a comment to the GitHub Actions workflow summary.
+- Posts a new comment and minimises (as `OUTDATED`) any previous comments that include a matching marker string.
+- Change the set of labels associated with the issue.
+- Close the issue.
 
 > [!CAUTION]
 > This action is provided for my own use and published in case it is useful to others. If you rely on it, fork and maintain your own copy. No support or stability guarantees are offered.
@@ -16,13 +20,19 @@ Various inputs are defined in the action to configure its operation:
 
 | Name | Description | Default
 | --- | --- | ---
-| `issue_number` | The GitHub issue to comment on | *required*
-| `body` | The comment body to add | *required*
+| `issue_number` | The GitHub issue to modify | *required*
+| `body` | The comment body to add; empty string to suppress adding a comment | `''`
 | `marker` | A prefix for the comment body, used to identify previous comments to be minimised | `'<!-- bot-comment -->'`
+| `labels_set` | Replace the set of labels on the issue with the provided set (JSON array of strings) | `''`
+| `labels_remove` | Remove a list of labels from the issue (JSON array of strings) | `''`
+| `labels_add` | Add a list of labels to the issue (JSON array of strings) | `''`
+| `close_issue` | Should the issue be closed after applying all updates | `false`
 | `github_token` | The GitHub token used to create an authenticated client | `${{ github.token }}`
-| `dry_run` | Disables actions that modify the issue (adding the comment and minimising previous comments) for testing | `false`
+| `workflow_postfix` | An optional link to the workflow run to append to the issue comment; empty string for none | `'Workflow run {{workflow}}'`
+| `workflow_summary` | Should the comment body be added to the workflow summary | `true`
+| `dry_run` | Disables actions that modify the issue (adding the comment, changing labels, minimising previous comments, or closing the issue) for testing | `false`
 
-If `body` is empty or `dry_run` is `true` then this action does nothing.
+The `labels_*` inputs all take a JSON array of strings, e.g. `["stale", "invalid"]`. The labels are updated in the sequence `labels_set`, then `labels_remove`, and finally `labels_add`.
 
 ## Usage
 
@@ -49,7 +59,8 @@ jobs:
           body: |
             Thanks for opening an issue here.
             Be sure to follow the contribution guidelines and issue template!
-          marker: `'<!-- opened-issue-comment -->'`
+          marker: '<!-- opened-issue-comment -->'
+          labels_add: '["triage-required"]'
 ```
 
 ## ISC License (ISC)

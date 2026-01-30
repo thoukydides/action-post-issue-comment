@@ -8,6 +8,7 @@
     ],
     "eslint.enable": true,
     "cSpell.words": [
+        "aeiou",
         "buymeacoffee",
         "color",
         "dosubot",

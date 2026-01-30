@@ -7,21 +7,41 @@ branding:
 
 inputs:
   issue_number:
-    description: The GitHub issue to comment on
+    description: The GitHub issue to modify
     required: true
     type: number
   body:
-    description: The comment body to add
-    required: true
+    description: The comment body to add; empty string to suppress adding a comment
     type: string
+    default: ''
   marker:
     description: A prefix for the comment body, used to identify previous comments to be minimised
     type: string
     default: '<!-- bot-comment -->'
+  labels_set:
+    description: Replace the set of labels on the issue with the provided set (JSON array of strings)
+    type: string
+    default: ''
+  labels_remove:
+    description: Remove a list of labels from the issue (JSON array of strings)
+    type: string
+    default: ''
+  labels_add:
+    description: Add a list of labels to the issue (JSON array of strings)
+    type: string
+    default: ''
+  close_issue:
+    description: Should the issue be closed after applying all updates
+    type: boolean
+    default: false
   github_token:
     description: The GitHub token used to create an authenticated client
     type: string
-    default: ${{ github.token }}
+    default: ${{ github.token }}  
+  workflow_summary:
+    description: Should the comment body be added to the workflow summary
+    type: boolean
+    default: true
   dry_run:
     description: Disables actions that modify the issue (adding the comment and minimising previous comments) for testing
     type: boolean
