@@ -31637,8 +31637,10 @@ async function run() {
     // Add the comment to the workflow summary
     if (comment && workflow_summary) {
         const { title, html_url } = (await github.rest.issues.get({ owner, repo, issue_number })).data;
-        coreExports.summary.addHeading(`${title} [#${issue_number}](${html_url})`);
-        coreExports.summary.addRaw(comment, true);
+        await coreExports.summary
+            .addHeading(`${title} [#${issue_number}](${html_url})`, 3)
+            .addRaw(comment, true)
+            .write();
     }
     // Exit early if no action required
     if (dry_run) {
