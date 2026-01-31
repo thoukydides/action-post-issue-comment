@@ -31638,7 +31638,7 @@ async function run() {
     if (comment && workflow_summary) {
         const { title, html_url } = (await github.rest.issues.get({ owner, repo, issue_number })).data;
         await coreExports.summary
-            .addHeading(`${title} [#${issue_number}](${html_url})`, 3)
+            .addRaw(`### ${title} [#${issue_number}](${html_url})`, true)
             .addRaw(comment, true)
             .write();
     }
