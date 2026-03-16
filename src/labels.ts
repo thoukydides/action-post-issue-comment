@@ -2,11 +2,11 @@
 // Copyright © 2026 Alexander Thoukydides
 
 import { context } from '@actions/github';
-import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types.js';
-import { GitHub } from '@actions/github/lib/utils.js';
+import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods';
 import { isDeepStrictEqual } from 'util';
 import { formatList } from './utils.js';
 import * as core from '@actions/core';
+import { GitHub } from '@actions/github/lib/utils';
 
 // GitHub REST API types
 type RestLabelResponse = RestEndpointMethodTypes['issues']['listLabelsForRepo' | 'listLabelsOnIssue']['response']['data'];
@@ -66,8 +66,8 @@ function parseLabels(repoLabels: string[], description: string, labels: string):
         if (result.some(l => typeof l !== 'string'))                        throw new Error('Array contains non-strings');
         if (!result.every(label => repoLabels.includes(label as string)))   throw new Error('Unknown labels');
         return result as string[];
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        throw new Error(`Invalid ${description}: ${message}`);
+    } catch (cause) {
+        const message = cause instanceof Error ? cause.message : String(cause);
+        throw new Error(`Invalid ${description}: ${message}`, { cause });
     }
 }
