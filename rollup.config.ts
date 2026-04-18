@@ -14,7 +14,6 @@ const onwarn = (warning: RollupLog, defaultHandler: (warning: string | RollupLog
         && ['CIRCULAR_DEPENDENCY', 'THIS_IS_UNDEFINED'].includes(warning.code ?? '')) {
         // Suppress undefined this and circular dependency warnings for @actions/*
     } else {
-        console.log(JSON.stringify({ ids, code: warning.code }));
         defaultHandler(warning);
     }
 };
